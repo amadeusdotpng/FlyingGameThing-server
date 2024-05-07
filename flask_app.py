@@ -76,31 +76,39 @@ def set_data():
     #
     # The server then calculates what the next game state 
     # should be and sends it back to the client.
-    if ('uuid' not in request or
-        ('acc' not in request and 0 <= request['acc'] <= 2) or
-        ('dir' not in request and len(request['dir']) != 3) or
+    if ('uuid' not in request.args or
+        'acc' not in request.args or
+        'dir_x' not in request.args or
+        'dir_y' not in request.args or
+        'dir_z' not in request.args or
         'timestamp' not in request):
         return Response(status=400)
 
 
     player = players[request['uuid']]
 
-    if int(request['timestamp']) < int(player['timestamp']):
+    try:
+        if int(request['timestamp']) < int(player['timestamp']):
+            return Response(status=204)
+
+        acc = int(request['acc'])
+        dir_x = float(request['dir_x'])
+        dir_y = float(request['dir_y'])
+        dir_z = float(request['dir_z'])
+
+        player['dir'] = {'x': dir_x, 'y': dir_y, 'z': dir_z}
+        player['vel']['x'] += dir_x * SPEED[acc] * DELTA
+        player['vel']['y'] += dir_y * SPEED[acc] * DELTA
+        player['vel']['z'] += dir_z * SPEED[acc] * DELTA
+
+        player['pos']['x'] += player['vel']['x'] * DELTA
+        player['pos']['y'] += player['vel']['y'] * DELTA
+        player['pos']['z'] += player['vel']['z'] * DELTA
+
         return Response(status=204)
+    except:
+        return Response(status=400)
 
-    acc = request['acc']
-    dir = request['dir']
-
-    player['dir'] = request['dir']
-    player['vel']['x'] += dir['x'] * SPEED[acc] * DELTA
-    player['vel']['y'] += dir['y'] * SPEED[acc] * DELTA
-    player['vel']['z'] += dir['z'] * SPEED[acc] * DELTA
-
-    player['pos']['x'] += player['vel']['x'] * DELTA
-    player['pos']['y'] += player['vel']['y'] * DELTA
-    player['pos']['z'] += player['vel']['z'] * DELTA
-
-    return Response(status=204)
 
 @app.route('/connect')
 def connect():
@@ -109,7 +117,7 @@ def connect():
     players[player_uuid]['username'] = choice(names)
     players[player_uuid]['pos'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['vel'] = {'x': 0, 'y': 0, 'z': 0}
-    players[player_uuid]['rot'] = {'x': 0, 'y': 0, 'z': 0}
+    players[player_uuid]['dir'] = {'x': 0, 'y': 0, 'z': 0}
     return Response(response=player_uuid, status=201)
 
 
