@@ -81,7 +81,7 @@ def set_data():
         'dir_x' not in request.args or
         'dir_y' not in request.args or
         'dir_z' not in request.args or
-        'timestamp' not in request):
+        'timestamp' not in request.args):
         return Response(status=400)
 
 
