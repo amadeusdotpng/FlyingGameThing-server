@@ -43,12 +43,7 @@ def clean():
 
 @app.route('/get_data')
 def get_data():
-    if 'uuid' not in request:
-        return Response(status=400)
-
-    player_uuid = request['uuid']
-    data = players[player_uuid]
-    resp = jsonify(data)
+    resp = jsonify(players)
     resp.status_code = 200
     return resp
 
