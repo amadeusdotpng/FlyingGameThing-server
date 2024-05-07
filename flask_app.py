@@ -110,6 +110,7 @@ def set_data():
 @app.route('/connect')
 def connect():
     player_uuid = str(uuid.uuid4())
+    players[player_uuid] = {}
     players[player_uuid]['username'] = choice(names)
     players[player_uuid]['pos'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['vel'] = {'x': 0, 'y': 0, 'z': 0}
