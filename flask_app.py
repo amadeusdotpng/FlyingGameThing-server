@@ -55,7 +55,7 @@ def set_data():
         return Response(response='Bad Data', status=400)
 
     if data['uuid'] not in players:
-        return redirect('/connect')
+        create_player()
 
     player = players[data['uuid']]
     player['rot'] = data['rot']
@@ -67,6 +67,12 @@ def set_data():
 
 @app.route('/connect')
 def connect():
+    player_uuid = create_player()
+    resp = jsonify({'uuid': player_uuid})
+    resp.status_code = 201
+    return resp
+
+def create_player():
     player_uuid = str(uuid.uuid4())
     players[player_uuid] = {}
     players[player_uuid]['username'] = choice(names)
@@ -74,9 +80,8 @@ def connect():
     players[player_uuid]['pos'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['timestamp'] = 0
 
-    resp = jsonify({'uuid': player_uuid})
-    resp.status_code = 201
-    return resp
+    return player_uuid
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=False)
