@@ -16,8 +16,7 @@ app = Flask(__name__)
         'username': username,
         'timestamp': timestamp,
         'pos': {'x': x, 'y': y, 'z': z},
-        'vel': {'x': x, 'y': y, 'z': z}, 
-        'acc': {'x': x, 'y': y, 'z': z}, 
+        'rot': {'x': x, 'y': y, 'z': z}, 
         'win_time': win_time,
     }
 }
@@ -52,7 +51,7 @@ def set_data():
     data = request.get_json()
 
     if (data is None or 'timestamp' not in data or 'uuid' not in data or
-        'rot' not in data or 'pos' not in data or 'vel' not in data or 'acc' not in data):
+        'rot' not in data or 'pos' not in data):
         return Response(response='Bad Data', status=400)
 
     if data['uuid'] not in players:
@@ -61,8 +60,6 @@ def set_data():
     player = players[data['uuid']]
     player['rot'] = data['rot']
     player['pos'] = data['pos']
-    player['vel'] = data['vel']
-    player['acc'] = data['acc']
     player['timestamp'] = data['timestamp']
 
     return Response(response='Success', status=200)
@@ -75,8 +72,6 @@ def connect():
     players[player_uuid]['username'] = choice(names)
     players[player_uuid]['rot'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['pos'] = {'x': 0, 'y': 0, 'z': 0}
-    players[player_uuid]['vel'] = {'x': 0, 'y': 0, 'z': 0}
-    players[player_uuid]['acc'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['timestamp'] = 0
 
     resp = jsonify({'uuid': player_uuid})
