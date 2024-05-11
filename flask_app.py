@@ -47,31 +47,19 @@ def get_data():
 
 # In-game constants
 # -----------------
-DRAG: float = 0.9825
-
-PITCH_SPEED = 0.0275
-YAW_SPEED = 0.0035
-ROLL_SPEED = 0.045
-
-IDLE_SPEED: float = 10
-FWD_SPEED: float = 120
-BCK_SPEED: float = -25
-SPEED = [BCK_SPEED, IDLE_SPEED, FWD_SPEED]
-
-# default timer
-DELTA = 1/60 * 0.067
 @app.route('/set_data', methods=['POST'])
 def set_data():
     data = request.get_json()
 
     if (data is None or 'timestamp' not in data or 'uuid' not in data or
-        'pos' not in data or 'vel' not in data or 'acc' not in data):
+        'rot' not in data or 'pos' not in data or 'vel' not in data or 'acc' not in data):
         return Response(response='Bad Data', status=400)
 
     if data['uuid'] not in players:
         return redirect('/connect')
 
     player = players[data['uuid']]
+    player['rot'] = data['rot']
     player['pos'] = data['pos']
     player['vel'] = data['vel']
     player['acc'] = data['acc']
@@ -85,6 +73,7 @@ def connect():
     player_uuid = str(uuid.uuid4())
     players[player_uuid] = {}
     players[player_uuid]['username'] = choice(names)
+    players[player_uuid]['rot'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['pos'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['vel'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['acc'] = {'x': 0, 'y': 0, 'z': 0}
@@ -94,7 +83,5 @@ def connect():
     resp.status_code = 201
     return resp
 
-
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=False)
+    app.run(host='0.0.0.0', port=80, debug=False)instance.rotation_degrees = rot
