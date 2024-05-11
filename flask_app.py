@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, Response, request
+from flask import Flask, jsonify, Response, redirect, request
 from random import choice
 import uuid
 
@@ -66,15 +66,16 @@ def set_data():
 
     if (data is None or 'timestamp' not in data or 'uuid' not in data or
         'pos' not in data or 'vel' not in data or 'acc' not in data):
-
         return Response(response='Bad Data', status=400)
+
+    if data['uuid'] not in players:
+        return redirect('/connect')
 
     player = players[data['uuid']]
     player['pos'] = data['pos']
     player['vel'] = data['vel']
     player['acc'] = data['acc']
     player['timestamp'] = data['timestamp']
-
 
     return Response(response='Success', status=200)
 
