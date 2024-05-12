@@ -40,6 +40,10 @@ def clean():
         del players[uuid]
     return 'WIP'
 
+@app.route('/')
+def home():
+    return 'Hello, World!'
+
 @app.route('/get_data')
 def get_data():
     clean()
