@@ -74,15 +74,16 @@ def set_data():
 @app.route('/connect')
 def connect():
     player_uuid = str(uuid.uuid4())
+    username = choice(names)
     players[player_uuid] = {}
-    players[player_uuid]['username'] = choice(names)
+    players[player_uuid]['username'] = username
     players[player_uuid]['rot'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['pos'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['vel'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['acc'] = {'x': 0, 'y': 0, 'z': 0}
     players[player_uuid]['timestamp'] = time.time()
 
-    resp = jsonify({'uuid': player_uuid})
+    resp = jsonify({'uuid': player_uuid, 'username': username})
     resp.status_code = 201
     return resp
 
