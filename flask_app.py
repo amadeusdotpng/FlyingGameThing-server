@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, Response, redirect, request
 from random import choice
 import uuid
+import time
 
 # Godly resource: 
 # https://gabrielgambetta.com/client-server-game-architecture.html
@@ -32,14 +33,16 @@ names = [
 ]
 players = {}
 
-
-
-@app.route('/clean')
 def clean():
+    current_time = time.time()
+    disconnected_players = [uuid for uuid in players if current_time - players[uuid]['timestamp'] > 60]
+    for uuid in disconnected_players:
+        del players[uuid]
     return 'WIP'
 
 @app.route('/get_data')
 def get_data():
+    clean()
     resp = jsonify(players)
     resp.status_code = 200
     return resp
