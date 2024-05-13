@@ -45,9 +45,12 @@ names = [
     'Spam', 'Ham', 'Eggs',
     'Alice', 'Bob', 'Charlie', 'Eve',
 ]
+
+START_TIME = 45       # 45 sec warmup
+END_TIME = 2*60+30+30 # 2.5 minuts to finish the race
 lobby = {
-    'start_time': time.time()+30,    # 30 sec warmup
-    'end_time': time.time()+4*60+30, # 4 minutes to finish the race (it shouldn't take this long :sob:)
+    'start_time': time.time() + START_TIME,
+    'end_time': time.time() + END_TIME,
     'game_state': GameState.WARMUP,  # start it on warm u[
     'players': {},
 }
@@ -68,7 +71,7 @@ def get_data():
     clean()
     if (lobby['game_state'] == GameState.WARMUP and
         lobby['start_time'] < time.time()):
-        lobby['game_state'] = int(GameState.STARTED)
+        lobby['game_state'] = GameState.STARTED
 
     if (lobby['game_state'] == GameState.STARTED and
         lobby['end_time'] < time.time()):
@@ -102,7 +105,7 @@ def set_data():
     player['vel'] = data['vel']
     player['acc'] = data['acc']
 
-    if data['finished']:
+    if data['finished'] and lobby['game_state'] == GameState.STARTED:
         player['finish_time'] = time.time()
         player['finished'] = True
 
@@ -113,8 +116,8 @@ def set_data():
 def connect():
     clean()
     if len(lobby['players']) == 0:
-        lobby['start_time'] = time.time() + 30
-        lobby['end_time'] = time.time() + 30
+        lobby['start_time'] = time.time() + START_TIME
+        lobby['end_time'] = time.time() + END_TIME
         lobby['game_state'] = GameState.WARMUP
 
 
