@@ -79,12 +79,13 @@ def get_data():
 
     if (lobby['game_state'] == GameState.STARTED and
         (lobby['end_time'] < time.time() or 
-         all(lobby['players'][uuid]['finished'] for uuid in lobby['players']))
-       ):
+         all(lobby['players'][uuid]['finished'] for uuid in lobby['players']))):
         lobby['game_state'] = GameState.ENDED
 
     if (lobby['game_state'] == GameState.ENDED and
         lobby['restart_time'] < time.time()):
+        lobby['game_state'] = GameState.WARMUP
+
         reset_lobby()
 
     resp = jsonify(lobby)
