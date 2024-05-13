@@ -33,10 +33,10 @@ app = Flask(__name__)
 }
 """
 
-class GameState(Enum):
-    WARMUP  = 0
-    STARTED = 1
-    ENDED   = 2
+class GameState(str, Enum):
+    WARMUP  = 'WARMUP'
+    STARTED = 'STARTED'
+    ENDED   = 'ENDED'
 
 names = [
     'Foo', 'Bar', 'Baz', 'Qux', 'Quux', 'Plugh', 'Xyzzy',
@@ -68,7 +68,7 @@ def get_data():
     clean()
     if (lobby['game_state'] == GameState.WARMUP and
         lobby['start_time'] < time.time()):
-        lobby['game_state'] = GameState.STARTED
+        lobby['game_state'] = int(GameState.STARTED)
 
     if (lobby['game_state'] == GameState.STARTED and
         lobby['end_time'] < time.time()):
