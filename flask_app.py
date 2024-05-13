@@ -16,6 +16,7 @@ app = Flask(__name__)
 {
     start_time: float
     end_time: float
+    restart_time: float
     game_state: GameState
     'players': {
         player_uuid: {
@@ -46,11 +47,14 @@ names = [
     'Alice', 'Bob', 'Charlie', 'Eve',
 ]
 
-START_TIME = 45       # 45 sec warmup
-END_TIME = 2*60+30+30 # 2.5 minuts to finish the race
+START_TIME = 45                             # 45 sec warmup
+END_TIME = START_TIME + 2*60+30             # 2.5 minuts to finish the race
+RESTART_TIME = START_TIME + END_TIME + 20   # 20 sec chill sesh
+current_time = time.time()
 lobby = {
-    'start_time': time.time() + START_TIME,
-    'end_time': time.time() + END_TIME,
+    'start_time': current_time + START_TIME,
+    'end_time': current_time + END_TIME,
+    'restart_time':current_time + RESTART_TIME,
     'game_state': GameState.WARMUP,  # start it on warm u[
     'players': {},
 }
@@ -74,13 +78,18 @@ def get_data():
         lobby['game_state'] = GameState.STARTED
 
     if (lobby['game_state'] == GameState.STARTED and
-        lobby['end_time'] < time.time()):
+        (lobby['end_time'] < time.time() or 
+         all(lobby['players'][uuid]['finished'] for uuid in lobby['players']))
+       ):
         lobby['game_state'] = GameState.ENDED
+
+    if (lobby['game_state'] == GameState.ENDED and
+        lobby['restart_time'] < time.time()):
+        reset_lobby()
 
     resp = jsonify(lobby)
     resp.status_code = 200
     return resp
-
 
 # In-game constants
 # -----------------
@@ -120,7 +129,6 @@ def connect():
         lobby['end_time'] = time.time() + END_TIME
         lobby['game_state'] = GameState.WARMUP
 
-
     player_info = create_player()
     resp = jsonify(player_info)
     resp.status_code = 201
@@ -133,7 +141,7 @@ def create_player():
     players[player_uuid] = {}
     players[player_uuid]['username'] = username
     players[player_uuid]['last_updated'] = time.time()
-    players[player_uuid]['win_time'] = -1
+    players[player_uuid]['finish_time'] = -1
     players[player_uuid]['finished'] = False
 
     players[player_uuid]['rot'] = {'x': 0, 'y': 0, 'z': 0}
@@ -142,6 +150,14 @@ def create_player():
     players[player_uuid]['acc'] = {'x': 0, 'y': 0, 'z': 0}
 
     return {'uuid': player_uuid, 'username': username}
+
+def reset_lobby():
+    current_time = time.time()
+    lobby['start_time'] = current_time + START_TIME
+    lobby['end_time'] =  current_time + END_TIME
+    lobby['restart_time'] = current_time + RESTART_TIME
+    lobby['game_state'] = GameState.WARMUP  # start it on warm u[
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=False)
