@@ -47,9 +47,9 @@ names = [
     'Alice', 'Bob', 'Charlie', 'Eve',
 ]
 
-UNTIL_STARTED = 30 # 30 second warmup
+UNTIL_STARTED = 5 # 30 second warmup
 UNTIL_ENDED = 2.5*60 # 2.5 minutes to complete race
-UNTIL_WARMUP = 10 # 10 second chill sesh
+UNTIL_WARMUP = 5 # 10 second chill sesh
 
 lobby = {
     'until_next': time.time() + UNTIL_WARMUP,
@@ -126,12 +126,20 @@ def set_data():
     player['vel'] = data['vel']
     player['acc'] = data['acc']
 
+    return Response(response='Success', status=200)
+
+@app.route('/win', methods=['POST'])
+def win():
+    data = request.get_json()
+    if 'uuid' not in data or 'finished' not in data:
+        return Response(response='Bad Data', status=400)
+
+    player = lobby['players'][data['uuid']]
     if data['finished'] and lobby['game_state'] == GameState.STARTED:
         player['finish_time'] = time.time()
         player['finished'] = True
 
     return Response(response='Success', status=200)
-
 
 @app.route('/connect')
 def connect():
