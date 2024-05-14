@@ -49,7 +49,7 @@ names = [
 
 START_TIME = 45                             # 45 sec warmup
 END_TIME = START_TIME + 2*60+30             # 2.5 minuts to finish the race
-RESTART_TIME = START_TIME + END_TIME + 10   # 20 sec chill sesh
+RESTART_TIME = START_TIME + END_TIME + 10   # 10 sec chill sesh
 current_time = time.time()
 lobby = {
     'start_time': current_time + START_TIME,
@@ -132,9 +132,9 @@ def connect():
 
     gamestate_time = None
     match lobby['game_state']:
+        case GameState.WARMUP: gamestate_time = lobby['start_time']
         case GameState.STARTED: gamestate_time = lobby['end_time']
         case GameState.ENDED:   gamestate_time = lobby['restart_time']
-        case GameState.RESTART: gamestate_time = lobby['start_time']
 
     player_info = create_player()
     player_info['gamestate_time'] = gamestate_time
