@@ -129,7 +129,16 @@ def connect():
         lobby['end_time'] = time.time() + END_TIME
         lobby['game_state'] = GameState.WARMUP
 
+
+    gamestate_time = None
+    match lobby['game_state']:
+        case GameState.STARTED: gamestate_time = lobby['end_time']
+        case GameState.ENDED:   gamestate_time = lobby['restart_time']
+        case GameState.RESTART: gamestate_time = lobby['start_time']
+
     player_info = create_player()
+    player_info['gamestate_time'] = gamestate_time
+
     resp = jsonify(player_info)
     resp.status_code = 201
     return resp
