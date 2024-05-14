@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, Response, redirect, request
+from flask_cors import CORS, cross_origin
 from random import choice
 from enum import Enum
 import uuid
@@ -9,6 +10,8 @@ import time
 
 # Setup
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Global Lobby
 # The structure should be:
@@ -101,6 +104,9 @@ def get_data():
 
     resp = jsonify(lobby)
     resp.status_code = 200
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Methods'] = 'POST'
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
     return resp
 
 # In-game constants
@@ -111,7 +117,11 @@ def set_data():
 
     conditions = ['last_updated', 'uuid', 'finished', 'rot', 'pos', 'vel', 'acc']
     if data is None or any(c not in data for c in conditions):
-        return Response(response='Bad Data', status=400)
+        resp = Response(response='Bad Data', status=400)
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        resp.headers['Access-Control-Allow-Methods'] = 'POST'
+        resp.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,Origin, X-Requested-With, Accept'
+        return resp
 
     if data['uuid'] not in lobby['players']:
         player_info = create_player()
@@ -126,20 +136,33 @@ def set_data():
     player['vel'] = data['vel']
     player['acc'] = data['acc']
 
-    return Response(response='Success', status=200)
+    resp = Response(response='Success', status=200)
+    resp.headers['Access-Control-Allow-Origin'] = 'https://amadeusdotpng.github.io'
+    resp.headers['Access-Control-Allow-Methods'] = 'POST'
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    return resp
 
 @app.route('/win', methods=['POST'])
 def win():
     data = request.get_json()
     if 'uuid' not in data or 'finished' not in data:
-        return Response(response='Bad Data', status=400)
+        resp = Response(response='Bad Data', status=400)
+        resp.headers['Access-Control-Allow-Origin'] = 'https://amadeusdotpng.github.io'
+        resp.headers['Access-Control-Allow-Methods'] = 'POST'
+        resp.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        return resp
+
 
     player = lobby['players'][data['uuid']]
     if data['finished'] and lobby['game_state'] == GameState.STARTED:
         player['finish_time'] = time.time()
         player['finished'] = True
 
-    return Response(response='Success', status=200)
+    resp = Response(response='Success', status=200)
+    resp.headers['Access-Control-Allow-Origin'] = 'https://amadeusdotpng.github.io'
+    resp.headers['Access-Control-Allow-Methods'] = 'POST'
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    return resp
 
 @app.route('/connect')
 def connect():
@@ -154,6 +177,9 @@ def connect():
 
     resp = jsonify(player_info)
     resp.status_code = 201
+    resp.headers['Access-Control-Allow-Origin'] = 'https://amadeusdotpng.github.io'
+    resp.headers['Access-Control-Allow-Methods'] = 'POST'
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
     return resp
 
 def create_player():
