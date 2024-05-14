@@ -50,9 +50,9 @@ names = [
     'Alice', 'Bob', 'Charlie', 'Eve',
 ]
 
-UNTIL_STARTED = 5 # 30 second warmup
+UNTIL_STARTED = 30 # 30 second warmup
 UNTIL_ENDED = 2.5*60 # 2.5 minutes to complete race
-UNTIL_WARMUP = 5 # 10 second chill sesh
+UNTIL_WARMUP = 10 # 10 second chill sesh
 
 lobby = {
     'until_next': time.time() + UNTIL_WARMUP,
