@@ -49,7 +49,7 @@ names = [
 
 START_TIME = 45                             # 45 sec warmup
 END_TIME = START_TIME + 2*60+30             # 2.5 minuts to finish the race
-RESTART_TIME = START_TIME + END_TIME + 20   # 20 sec chill sesh
+RESTART_TIME = START_TIME + END_TIME + 10   # 20 sec chill sesh
 current_time = time.time()
 lobby = {
     'start_time': current_time + START_TIME,
@@ -84,7 +84,6 @@ def get_data():
 
     if (lobby['game_state'] == GameState.ENDED and
         lobby['restart_time'] < time.time()):
-        lobby['game_state'] = GameState.WARMUP
 
         reset_lobby()
 
@@ -158,7 +157,10 @@ def reset_lobby():
     lobby['end_time'] =  current_time + END_TIME
     lobby['restart_time'] = current_time + RESTART_TIME
     lobby['game_state'] = GameState.WARMUP  # start it on warm u[
-
+    
+    for player in lobby['players']:
+        player['finish_time'] = -1
+        player['finished'] = False
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=False)
