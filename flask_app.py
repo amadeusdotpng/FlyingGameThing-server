@@ -47,15 +47,13 @@ names = [
     'Alice', 'Bob', 'Charlie', 'Eve',
 ]
 
-START_TIME = 45                             # 45 sec warmup
-END_TIME = START_TIME + 2*60+30             # 2.5 minuts to finish the race
-RESTART_TIME = START_TIME + END_TIME + 10   # 10 sec chill sesh
-current_time = time.time()
+UNTIL_STARTED = 30 # 30 second warmup
+UNTIL_ENDED = 2.5*60 # 2.5 minutes to complete race
+UNTIL_WARMUP = 10 # 10 second chill sesh
+
 lobby = {
-    'start_time': current_time + START_TIME,
-    'end_time': current_time + END_TIME,
-    'restart_time':current_time + RESTART_TIME,
-    'game_state': GameState.WARMUP,  # start it on warm u[
+    'until_next': time.time() + UNTIL_WARMUP,
+    'game_state': GameState.WARMUP,  # start it on warm up
     'players': {},
 }
 
@@ -73,19 +71,29 @@ def home():
 @app.route('/get_data')
 def get_data():
     clean()
-    if (lobby['game_state'] == GameState.WARMUP and
-        lobby['start_time'] < time.time()):
+    
+    # STARTED finished -> ENDED
+    if (lobby['game_state'] == GameState.STARTED and
+         (lobby['until_next'] < time.time() or
+          all(lobby['players'][uuid]['finished'] for uuid in lobby['players']))):
+        lobby['game_state'] = GameState.ENDED
+        lobby['until_next'] = time.time() + UNTIL_WARMUP
+
+    # ENDED finished -> WARMUP
+    elif (lobby['game_state'] == GameState.ENDED and
+          lobby['until_next'] < time.time()):
+        lobby['game_state'] = GameState.WARMUP
+        lobby['until_next'] = time.time() + UNTIL_STARTED
+        lobby['start_time'] = current_time + UNTIL_STARTED
+        reset_players()
+
+    # WARMUP finished -> STARTED
+    elif (lobby['game_state'] == GameState.WARMUP and
+        lobby['until_next'] < time.time()):
         lobby['game_state'] = GameState.STARTED
 
-    if (lobby['game_state'] == GameState.STARTED and
-        (lobby['end_time'] < time.time() or 
-         all(lobby['players'][uuid]['finished'] for uuid in lobby['players']))):
-        lobby['game_state'] = GameState.ENDED
-
-    if (lobby['game_state'] == GameState.ENDED and
-        lobby['restart_time'] < time.time()):
-
-        reset_lobby()
+        current_time = time.time()
+        lobby['until_next'] = current_time + UNTIL_ENDED
 
     resp = jsonify(lobby)
     resp.status_code = 200
@@ -125,19 +133,12 @@ def set_data():
 def connect():
     clean()
     if len(lobby['players']) == 0:
-        lobby['start_time'] = time.time() + START_TIME
-        lobby['end_time'] = time.time() + END_TIME
+        current_time = time.time()
+        lobby['until_next'] = current_time + UNTIL_STARTED
+        lobby['start_time'] = current_time + UNTIL_STARTED
         lobby['game_state'] = GameState.WARMUP
-
-
-    gamestate_time = None
-    match lobby['game_state']:
-        case GameState.WARMUP: gamestate_time = lobby['start_time']
-        case GameState.STARTED: gamestate_time = lobby['end_time']
-        case GameState.ENDED:   gamestate_time = lobby['restart_time']
-
     player_info = create_player()
-    player_info['gamestate_time'] = gamestate_time
+    player_info['gamestate_time'] = lobby['until_next']
 
     resp = jsonify(player_info)
     resp.status_code = 201
@@ -160,16 +161,11 @@ def create_player():
 
     return {'uuid': player_uuid, 'username': username}
 
-def reset_lobby():
-    current_time = time.time()
-    lobby['start_time'] = current_time + START_TIME
-    lobby['end_time'] =  current_time + END_TIME
-    lobby['restart_time'] = current_time + RESTART_TIME
-    lobby['game_state'] = GameState.WARMUP  # start it on warm u[
-    
-    for player in lobby['players']:
-        player['finish_time'] = -1
-        player['finished'] = False
+def reset_players():
+    players = lobby['players']
+    for uuid in lobby['players']:
+        players[uuid]['finish_time'] = -1
+        players[uuid]['finished'] = False
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=False)
