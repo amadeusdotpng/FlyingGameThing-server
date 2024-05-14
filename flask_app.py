@@ -77,13 +77,17 @@ def get_data():
          (lobby['until_next'] < time.time() or
           all(lobby['players'][uuid]['finished'] for uuid in lobby['players']))):
         lobby['game_state'] = GameState.ENDED
-        lobby['until_next'] = time.time() + UNTIL_WARMUP
+
+        current_time = time.time()
+        lobby['until_next'] = current_time + UNTIL_WARMUP
 
     # ENDED finished -> WARMUP
     elif (lobby['game_state'] == GameState.ENDED and
           lobby['until_next'] < time.time()):
         lobby['game_state'] = GameState.WARMUP
-        lobby['until_next'] = time.time() + UNTIL_STARTED
+
+        current_time = time.time()
+        lobby['until_next'] = current_time + UNTIL_STARTED
         lobby['start_time'] = current_time + UNTIL_STARTED
         reset_players()
 
